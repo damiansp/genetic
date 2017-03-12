@@ -1,44 +1,77 @@
+# python3
 import random
+import statistics
+import sys
+import time
 
-# _functions are protected
-def _generate_parent(length, gene_set):
-    genes = []
+class Benchmark:
+    @staticmethod
+    def run(function):
+        timings = []
+        stdout = sys.stdout
 
-    while len(genes) < length:
-        sample_size = min(length - len(genes), len(gene_set))
-        genes.extend(random.sample(gene_set, sample_size))
+        for i in range(100):
+            # sys.stdout = None # mute output Python 3 only
+            start_time = time.time()
+            function()
 
-    return ''.join(genes)
+            seconds = time.time() - start_time
+            # sys.stdout = stdout
+            timings.append(seconds)
 
-def _mutate(parent, gene_set):
-    index = random.randrange(0, len(parent))
-    child_genes = list(parent)
-    new_gene, alternate = random.sample(gene_set, 2)
-    child_genes[index] = (alternate if new_gene == child_genes[index]
-                          else new_gene)
-    return ''.join(child_genes)
+            mean = statistics.mean(timings)
 
+            if i < 10 or i % 10 == 9:
+                print('{0} {1:3.2f} {2:3.2f}'.format(
+                    1 + i,
+                    mean,
+                    statistics.stdev(timings, mean) if i > 1 else 0))
 
-def get_best(get_fitness, target_len, optimal_fitness, gene_set, display):
-    random.seed()
-    best_parent = _generate_parent(target_len, gene_set)
-    best_fitness = get_fitness(best_parent)
-    display(best_parent)
+class Chromosome:
+    genes = None
+    fitness = None
 
-    if best_fitness >= optimal_fitness:
-        return best_parent
+    def __init__(self, genes, fitness):
+        self.genes = genes
+        self.fitness = fitness
 
-    while True:
-        child = _mutate(best_parent, gene_set)
-        child_fitness = get_fitness(child)
+    # _functions are protected
+    def _mutate(parent, gene_set, get_fitness):
+        index = random.randrange(0, len(parent.genes))
+        child_genes = parent.Genes[:]
+        new_gene, alternate = random.sample(gene_set, 2)
+        child_genes[index] = (alternate if new_gene == child_genes[index]
+                              else new_gene)
+        fitness = get_fitness(child_genes)
+        return Chromosome(child_genes, fitness)
+    
+    def _generate_parent(length, gene_set, get_fitness):
+        genes = []
 
-        if best_fitness >= child_fitness:
-            continue
+        while len(genes) < length:
+            sample_size = min(length - len(genes), len(gene_set))
+            genes.extend(random.sample(gene_set, sample_size))
+            
+        fitness = get_fitness(genes)
+        return Chromosome(genes, fitness)
+    
+    def get_best(get_fitness, target_len, optimal_fitness, gene_set, display):
+        random.seed()
+        best_parent = _generate_parent(target_len, gene_set, get_fitness)
+        display(best_parent)
 
-        display(child)
+        if best_fitness >= optimal_fitness:
+            return best_parent
 
-        if child_fitness >= optimal_fitness:
-            return child
+        while True:
+            child = _mutate(best_parent, gene_set, get_fitness)
 
-        best_fitness = child_fitness
-        best_parent = child
+            if best_parent.fitness >= child_fitness:
+                continue
+
+            display(child)
+
+            if child_fitness >= optimal_fitness:
+                return child
+
+            best_parent = child
