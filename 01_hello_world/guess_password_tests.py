@@ -3,17 +3,25 @@ import genetic
 import random
 import unittest
 
+def get_fitness(guess, target):
+    return sum(1 for expected, actual in zip(target, guess)
+               if expected == actual)
+
 def display(candidate, start_time):
     time_diff = datetime.datetime.now() - start_time
     print('{0}\t{1}\t{2}'.format(
-        ''.join(candidate.Genes), candidate.fitness, str(time_diff)))
+        ''.join(candidate.genes), candidate.fitness, str(time_diff)))
 
 class GuessPasswordTests(unittest.TestCase):
     gene_set = ' abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.?!'
     
-    def get_fitness(self, genes, target):
-        return sum(1 for expected, actual in zip(target, genes)
-                   if expected == actual)
+    def test_Hello_World(self):
+        target = 'Hello World!'
+        self.guess_password(target)
+
+    def test_long(self):
+        target = 'For I am fearfully and wonderfully made, bitches.'
+        self.guess_password(target)
 
     def guess_password(self, target):
         start_time = datetime.datetime.now()
@@ -24,21 +32,13 @@ class GuessPasswordTests(unittest.TestCase):
         def fn_display(self, genes):
             display(candidate, start_time)
 
-            optimal_fitness = len(target)
-            best = genetic.get_best(fn_get_fitness,
-                                    len(target),
-                                    optimal_fitness,
-                                    self.gene_set,
-                                    fn_display)
-            self.assertEqual(''.join(best.Genes), target)
-
-    def test_Hello_World(self):
-        target = 'Hello World!'
-        self.guess_password(target)
-
-    def test_long(self):
-        target = 'For I am fearfully and wonderfully made, bitches.'
-        self.guess_password(target)
+        optimal_fitness = len(target)
+        best = genetic.get_best(fn_get_fitness,
+                                len(target),
+                                optimal_fitness,
+                                self.gene_set,
+                                fn_display)
+        self.assertEqual(''.join(best.genes), target)
 
     def test_random(self):
         length = 150

@@ -11,9 +11,9 @@ def get_fitness(genes):
 def display(candidate, start_time):
     time_diff = datetime.datetime.now() - start_time
     print('{0}...{1}\t{2:3.2f}\t{3}'.format(
-        ''.join(map(str, candidate.Genes[:15])),
-        ''.join(map(str, candidate.Genes[-15:])),
-        candidate.Fitness,
+        ''.join(map(str, candidate.genes[:15])),
+        ''.join(map(str, candidate.genes[-15:])),
+        candidate.fitness,
         str(time_diff)))
 
 class OneMaxTests(unittest.TestCase):
@@ -30,7 +30,7 @@ class OneMaxTests(unittest.TestCase):
         optimal_fitness = length
         best = genetic.get_best(
             fn_get_fitness, length, optimal_fitness, gene_set, fn_display)
-        self.assertEqual(best.Fitness, optimal_Fitness)
+        self.assertEqual(best.fitness, optimal_fitness)
         
     def test_benchmark(self):
         genetic.Benchmark.run(lambda: self.test(4000))
