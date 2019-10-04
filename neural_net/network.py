@@ -77,6 +77,7 @@ class Network:
         self.n_inputs = n_inputs
         self.n_outputs = n_outputs
         self.input_nodes = [InputNeuron(name) for name in self.feature_names]
+        self.output_node = Neuron(has_path_to_out=True)
 
     def show_nodes(self):
         for node in self.input_nodes:
@@ -86,10 +87,11 @@ class Network:
 class Neuron:
     id_iter = itertools.count()
     
-    def __init__(self, activation=identity):
+    def __init__(self, activation=identity, has_path_to_out=False):
         self.idn = next(Neuron.id_iter)
         self.activation = activation
         self.inputs = [1] # bias
+        self.has_path_to_out = False
 
     def __str__(self):
         return f'Neuron {self.idn}'
