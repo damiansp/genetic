@@ -2,6 +2,7 @@ import itertools
 
 import numpy as np
 import pandas as pd
+from   pprint import pprint
 
 
 N = 100
@@ -16,7 +17,14 @@ def main():
     print(feature_names)
     network = Network(feature_names)
     network.show_nodes()
-
+    neuron = Neuron()
+    neuron.add_input('test1', 3, 1.3)
+    neuron.add_input('test2', 5, 2.1)
+    print(neuron)
+    neuron.print_inputs()
+    computed = neuron.compute()
+    print(computed)
+    
 
 def identity(x):
     return x
@@ -77,24 +85,41 @@ class Network:
         self.n_inputs = n_inputs
         self.n_outputs = n_outputs
         self.input_nodes = [InputNeuron(name) for name in self.feature_names]
-        self.output_node = Neuron(has_path_to_out=True)
+        self.output_nodes = [OutputNeuron('Out1')]
+        self.hidden_nodes = [Neuron()]
 
     def show_nodes(self):
-        for node in self.input_nodes:
+        for node in self.input_nodes + self.hidden_nodes + self.output_nodes:
             print(node)
-        
-        
+
+
 class Neuron:
     id_iter = itertools.count()
     
-    def __init__(self, activation=identity, has_path_to_out=False):
+    def __init__(self, activation=identity):
         self.idn = next(Neuron.id_iter)
         self.activation = activation
-        self.inputs = [1] # bias
-        self.has_path_to_out = False
+        self._inputs = {'bias': {'value': 1, 'weight': 0}}
+
+    @property
+    def inputs(self):
+        return self._inputs
+
+    def add_input(self, name, value, weight=1):
+        assert name not in self.inputs, f'{name} already in inputs'
+        self._inputs[name] = {'value': value, 'weight': weight}
 
     def __str__(self):
         return f'Neuron {self.idn}'
+
+    def print_inputs(self):
+        pprint(self.inputs)
+
+    def compute(self):
+        data = [v for v in self._inputs.values()]
+        values, weights = ([d['value'] for d in data],
+                           [d['weight'] for d in data])
+        return self.activation(np.dot(values, weights))
 
 
 class InputNeuron(Neuron):
@@ -105,7 +130,14 @@ class InputNeuron(Neuron):
     def __str__(self):
         return f'Input{super().__str__()}: {self.name}'
 
-    
+
+class OutputNeuron(Neuron):
+    def __init__(self, name):
+        super().__init__()
+        self.name = name
+
+    def __str__(self):
+        return f'Outputput{super().__str__()}: {self.name}'
 
 
 
